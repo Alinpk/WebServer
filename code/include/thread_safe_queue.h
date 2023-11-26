@@ -20,13 +20,13 @@ public:
     void Push(T elem);
 
     // 尝试获取队列中数据
-    // @ms: <0-立即返回；=0-阻塞直到数据产生；>0-阻塞直到数据产生或者等待ms毫秒
+    // @ms: <0-阻塞直到数据产生；=0-立即返回；>0-阻塞直到数据产生或者等待ms毫秒
     std::optional<T> Pop(int32_t ms = 0);
 
     size_t Size();
 
 private:
-    std::optional<T> PopImm();
+    std::optional<T> PopUntilHasVal();
     std::optional<T> PopFor(uint32_t ms);
 
 private:
@@ -45,30 +45,28 @@ template<typename T>
 void ThreadSafeQueue<T>::Push(T elem) {
     std::lock_guard<std::mutex> lk(m_mut);
     m_data.push(elem);
-    m_cv.notify_all();
+    m_cv.notify_one();
 }
 
 template<typename T>
 std::optional<T> ThreadSafeQueue<T>::Pop(int32_t ms) 
 {
     if (ms < 0) {
-        return PopImm();
+        return PopUntilHasVal();
     } else {
         return PopFor(ms);
     }
 }
 
 template<typename T>
-std::optional<T> ThreadSafeQueue<T>::PopImm()
+std::optional<T> ThreadSafeQueue<T>::PopUntilHasVal()
 {
-    std::lock_guard<std::mutex> lk(m_mut);
-    if (m_data.empty()) { 
-        return std::nullopt;
-    }
-
-    std::optional<T> res(std::move(m_data.front()));
+    std::unique_lock<std::mutex> lk(m_mut);
+    m_cv.wait(lk, [this]() { return !m_data.empty(); });
+    auto res(std::move(m_data.front()));
     m_data.pop();
     return res;
+
 }
 
 template<typename T>
@@ -87,7 +85,7 @@ std::optional<T> ThreadSafeQueue<T>::PopFor(uint32_t ms)
 template<typename T>
 size_t ThreadSafeQueue<T>::Size()
 {
-    std::lock_guard<std::mutex> lk(m_mut);
+    std::unique_lock<std::mutex> lk(m_mut);
     return m_data.size();
 }
 #endif

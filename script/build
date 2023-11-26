@@ -46,7 +46,7 @@ build(){
 run(){
     if [ -d ${output_path} ]
     then
-        ${output_path}/thread_exe
+        ${output_path}/WebServer
     fi
 }
 

@@ -17,19 +17,22 @@ set (${PROJECT_NAME}_VERSION "${${PROJECT_NAME}_VERSION_MAJOR}.${${PROJECT_NAME}
 set(CMAKE_CXX_STANDARD 20)
 # macos should add following additional command
 # set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++2a -fexperimental-library -stdlib=libc++")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++2a")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++2a -I/usr/include/mysql")
 
 include(${PROJECT_SOURCE_DIR}/cmake/target.cmake)
+# include(${PROJECT_SOURCE_DIR}/cmake/cmake/FindMySQL.cmake)
 include(${PROJECT_SOURCE_DIR}/dependence/dependence.cmake)
+
+# find_package(MySQL MODULE REQUIRED)
 
 add_subdirectory(code)
 enable_testing()
 add_subdirectory(test)
 
 install(TARGETS ${LIB_NAME}
-        LIBRARY DESTINATION ${CMAKE_BINARY_DIR}/lib  # 动态库安装路径
-        ARCHIVE DESTINATION ${CMAKE_BINARY_DIR}/lib  # 静态库安装路径
-        PUBLIC_HEADER DESTINATION ${CMAKE_BINARY_DIR}/include  # 头文件安装路径
+        LIBRARY DESTINATION ${CMAKE_BINARY_DIR}/lib  # 锟斤拷态锟解安装路锟斤拷
+        ARCHIVE DESTINATION ${CMAKE_BINARY_DIR}/lib  # 锟斤拷态锟解安装路锟斤拷
+        PUBLIC_HEADER DESTINATION ${CMAKE_BINARY_DIR}/include  # 头锟侥硷拷锟斤拷装路锟斤拷
         )
 
 install(TARGETS ${BIN_NAME}
